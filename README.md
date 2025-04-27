@@ -10,6 +10,7 @@ Backend da aplicação Advantage CRM, desenvolvido com Flask para gerenciamento 
 - Flask-JWT-Extended (Autenticação)
 - Flask-Migrate (Migrações de banco de dados)
 - Flask-CORS (Integração com frontend)
+- Gunicorn (Servidor WSGI para produção)
 
 ## Estrutura do Projeto
 
@@ -26,8 +27,10 @@ backend/
 │   └── utils/                # Utilitários e helpers
 ├── migrations/               # Migrações do banco de dados
 ├── config.py                 # Configurações da aplicação
+├── gunicorn_config.py        # Configuração do Gunicorn para produção
 ├── requirements.txt          # Dependências do projeto
-└── run.py                    # Ponto de entrada da aplicação
+├── run.py                    # Ponto de entrada para desenvolvimento
+└── wsgi.py                   # Ponto de entrada para produção (Gunicorn)
 ```
 
 ## Instalação e Configuração
@@ -75,6 +78,50 @@ flask init-db
 flask run
 # ou
 python -m flask run
+```
+
+## Usando Gunicorn para Produção
+
+Para ambientes de produção, é recomendado usar o Gunicorn como servidor WSGI ao invés do servidor de desenvolvimento embutido do Flask.
+
+### Iniciar com configurações padrão:
+
+```bash
+gunicorn -w 4 -b 0.0.0.0:5001 wsgi:app
+```
+
+### Iniciar com arquivo de configuração:
+
+```bash
+gunicorn -c gunicorn_config.py wsgi:app
+```
+
+### Opções comuns do Gunicorn:
+
+- `-w` ou `--workers`: Número de processos worker
+- `-b` ou `--bind`: Endereço de IP e porta para bindar o servidor
+- `-D` ou `--daemon`: Rodar em background como um daemon
+- `--access-logfile`: Arquivo de log de acesso
+- `--error-logfile`: Arquivo de log de erros
+- `--log-level`: Nível de log (debug, info, warning, error, critical)
+
+### Configurações em Produção
+
+Em um ambiente de produção, é recomendado usar o Gunicorn atrás de um servidor web como Nginx ou Apache, que podem lidar melhor com conexões estáticas, SSL, e balanceamento de carga.
+
+Exemplo básico de configuração Nginx:
+
+```nginx
+server {
+    listen 80;
+    server_name seu-dominio.com;
+
+    location / {
+        proxy_pass http://localhost:5001;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
 ```
 
 ## API Endpoints
