@@ -100,23 +100,13 @@ def _initialize_extensions(app):
 
 
 def _configure_cors(app):
-    origins = [
-        "http://localhost:8080",
-        "http://localhost:8081", 
-        "http://192.168.15.4:8081",
-        "http://127.0.0.1:8080",
-        "http://127.0.0.1:8081"
-    ]
+    """
+    Configura o CORS (Cross-Origin Resource Sharing) para a aplicação.
     
-    # Configuração simplificada de CORS para evitar headers duplicados
-    CORS(app, 
-         resources={r"/api/*": {"origins": origins}},
-         supports_credentials=True,
-         expose_headers=["Content-Type", "Authorization"],
-         allow_headers=["Content-Type", "Authorization", "Access-Control-Allow-Origin", 
-                       "Access-Control-Allow-Credentials"],
-         methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"]
-    )
+    Args:
+        app: Instância da aplicação Flask
+    """
+    CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 
 def _configure_jwt_handlers(app):

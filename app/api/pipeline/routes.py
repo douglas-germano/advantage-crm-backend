@@ -74,6 +74,44 @@ def create_pipeline():
         return jsonify({'error': 'Erro ao criar pipeline', 'details': str(e)}), 500
 # --- FIM: Novas Rotas para Pipelines ---
 
+@bp.route('/<int:id>/stages', methods=['GET'])
+@jwt_required()
+def get_pipeline_stages(id):
+    """Get all stages for a specific pipeline."""
+    try:
+        # Verify if pipeline exists
+        pipeline = Pipeline.query.get(id)
+        if not pipeline:
+            return jsonify({'error': 'Pipeline not found'}), 404
+            
+        # Get all stages for this pipeline ordered by order
+        stages = PipelineStage.query.filter_by(pipeline_id=id).order_by(PipelineStage.order).all()
+        
+        # Convert to dict
+        result = []
+        for stage in stages:
+            result.append(stage.to_dict())
+            
+        return jsonify(result)
+    except Exception as e:
+        current_app.logger.error(f"Error fetching pipeline stages: {str(e)}")
+        return jsonify({'error': 'Error fetching pipeline stages', 'details': str(e)}), 500
+
+@bp.route('/default', methods=['GET'])
+@jwt_required()
+def get_default_pipeline():
+    """Get the default pipeline."""
+    try:
+        # Get the default pipeline
+        pipeline = Pipeline.query.filter_by(is_default=True).first()
+        if not pipeline:
+            return jsonify({'error': 'No default pipeline found'}), 404
+            
+        return jsonify(pipeline.to_dict())
+    except Exception as e:
+        current_app.logger.error(f"Error fetching default pipeline: {str(e)}")
+        return jsonify({'error': 'Error fetching default pipeline', 'details': str(e)}), 500
+
 # --- COMENTAR ROTAS DE STAGES POR ENQUANTO ---
 # @bp.route('/stages', methods=['GET'])
 # @jwt_required()

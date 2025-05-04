@@ -45,7 +45,10 @@ class Workflow(db.Model):
     
     def get_trigger_data(self):
         """Retorna os dados do gatilho como um dicionário"""
-        return json.loads(self.trigger_data) if self.trigger_data else {}
+        try:
+            return json.loads(self.trigger_data) if self.trigger_data else {}
+        except json.JSONDecodeError:
+            return {}
     
     def to_dict(self, include_actions=True):
         """Retorna uma representação em dicionário do workflow"""
@@ -99,16 +102,22 @@ class WorkflowAction(db.Model):
         self.workflow_id = workflow_id
         self.action_type = action_type
         self.sequence = sequence
-        self.action_data = json.dumps(action_data) if isinstance(action_data, dict) else action_data
-        self.condition = json.dumps(condition) if isinstance(condition, dict) else condition
+        self.action_data = json.dumps(action_data) if isinstance(action_data, (dict, list)) else action_data
+        self.condition = json.dumps(condition) if isinstance(condition, (dict, list)) else condition
     
     def get_action_data(self):
         """Retorna os dados da ação como um dicionário"""
-        return json.loads(self.action_data) if self.action_data else {}
+        try:
+            return json.loads(self.action_data) if self.action_data else {}
+        except json.JSONDecodeError:
+            return {}
     
     def get_condition(self):
         """Retorna a condição como um dicionário"""
-        return json.loads(self.condition) if self.condition else {}
+        try:
+            return json.loads(self.condition) if self.condition else {}
+        except json.JSONDecodeError:
+            return {}
     
     def to_dict(self):
         """Retorna uma representação em dicionário da ação"""

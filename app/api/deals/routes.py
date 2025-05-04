@@ -231,4 +231,34 @@ def move_deal(id):
     except Exception as e:
         db.session.rollback()
         current_app.logger.error(f"Error moving deal: {str(e)}")
-        return jsonify({'error': 'Error moving deal', 'details': str(e)}), 500 
+        return jsonify({'error': 'Error moving deal', 'details': str(e)}), 500
+
+@bp.route('/<int:id>/stage', methods=['PUT'])
+@jwt_required()
+def update_deal_stage(id):
+    """Update a deal's pipeline stage."""
+    try:
+        deal = Deal.query.get(id)
+        if not deal:
+            return jsonify({'error': 'Deal not found'}), 404
+        
+        # Validate data
+        data = request.json
+        if not data or 'pipeline_stage_id' not in data:
+            return jsonify({'error': 'Pipeline stage ID required'}), 400
+        
+        # Check if the stage exists
+        pipeline_stage = PipelineStage.query.get(data['pipeline_stage_id'])
+        if not pipeline_stage:
+            return jsonify({'error': 'Invalid pipeline stage'}), 400
+            
+        # Update stage
+        deal.pipeline_stage_id = data['pipeline_stage_id']
+        
+        db.session.commit()
+        
+        return jsonify(deal.to_dict())
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error updating deal stage: {str(e)}")
+        return jsonify({'error': 'Error updating deal stage', 'details': str(e)}), 500 
